@@ -5,6 +5,7 @@ var remote = require('remote');
 var Tray = remote.require('tray');
 var Menu = remote.require('menu');
 var path = require('path');
+var notifier = require('node-notifier');
 
 var soundButtons = document.querySelectorAll('.button-sound');
 var closeEl = document.querySelector('.close');
@@ -25,6 +26,10 @@ function prepareButton(buttonEl, soundName) {
 
   var audio = new Audio(__dirname + '/wav/' + soundName + '.wav');
   buttonEl.addEventListener('click', function() {
+    notifier.notify({
+      title: 'SoundMachine',
+      message: 'Playing the ' + soundName + ' sound.'
+    });
     audio.currentTime = 0;
     audio.play();
   });
