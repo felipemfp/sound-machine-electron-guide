@@ -9,66 +9,78 @@ var ipc = require('ipc');
 var mainWindow = null;
 var settingsWindow = null;
 
+var iconPath = __dirname + '/app/img/app-icon';
+
+if (process.platform === 'darwin') {
+  iconPath += '.icns';
+} else if (process.platform === 'win32') {
+  iconPath += '.ico';
+} else {
+  iconPath += '.png';
+}
+
 app.on('ready', function() {
-    if (!configuration.readSettings('shortcutKeys')) {
-        configuration.saveSettings('shortcutKeys', ['ctrl', 'shift']);
-    }
+  if (!configuration.readSettings('shortcutKeys')) {
+    configuration.saveSettings('shortcutKeys', ['ctrl', 'shift']);
+  }
 
-    mainWindow = new BrowserWindow({
-        frame: false,
-        height: 700,
-        resizable: false,
-        width: 368
-    });
+  mainWindow = new BrowserWindow({
+    frame: false,
+    height: 700,
+    resizable: false,
+    width: 368,
+    icon: iconPath
+  });
 
-    mainWindow.loadUrl('file://' + __dirname + '/app/index.html');
+  mainWindow.loadUrl('file://' + __dirname + '/app/index.html');
 
-    setGlobalShortcuts();
+  setGlobalShortcuts();
 });
 
 function setGlobalShortcuts() {
-    globalShortcut.unregisterAll();
+  globalShortcut.unregisterAll();
 
-    var shortcutKeysSetting = configuration.readSettings('shortcutKeys');
-    var shortcutPrefix = shortcutKeysSetting.length === 0 ? '' : shortcutKeysSetting.join('+') + '+';
+  var shortcutKeysSetting = configuration.readSettings('shortcutKeys');
+  var shortcutPrefix = shortcutKeysSetting.length === 0 ? '' : shortcutKeysSetting.join('+') + '+';
 
-    globalShortcut.register(shortcutPrefix + '1', function () {
-        mainWindow.webContents.send('global-shortcut', 0);
-    });
-    globalShortcut.register(shortcutPrefix + '2', function () {
-        mainWindow.webContents.send('global-shortcut', 1);
-    });
+  globalShortcut.register(shortcutPrefix + '1', function() {
+    mainWindow.webContents.send('global-shortcut', 0);
+  });
+  globalShortcut.register(shortcutPrefix + '2', function() {
+    mainWindow.webContents.send('global-shortcut', 1);
+  });
 }
 
-ipc.on('close-main-window', function () {
-    app.quit();
+ipc.on('close-main-window', function() {
+  app.quit();
 });
 
-ipc.on('open-settings-window', function () {
-    if (settingsWindow) {
-        return;
-    }
+ipc.on('open-settings-window', function() {
+  if (settingsWindow) {
+    return;
+  }
 
-    settingsWindow = new BrowserWindow({
-        frame: false,
-        height: 200,
-        resizable: false,
-        width: 200
-    });
+  settingsWindow = new BrowserWindow({
+    frame: false,
+    height: 200,
+    resizable: false,
+    width: 200,
+    icon: iconPath
+  });
 
-    settingsWindow.loadUrl('file://' + __dirname + '/app/settings.html');
+  settingsWindow.loadUrl('file://' + __dirname + '/app/settings.html');
 
-    settingsWindow.on('closed', function () {
-        settingsWindow = null;
-    });
+  settingsWindow.on('closed', function() {
+    settingsWindow = null;
+  });
 });
 
-ipc.on('close-settings-window', function () {
-    if (settingsWindow) {
-        settingsWindow.close();
-    }
+ipc.on('close-settings-window', function() {
+  if (settingsWindow) {
+    settingsWindow.close();
+  }
 });
 
-ipc.on('set-global-shortcuts', function () {
-    setGlobalShortcuts();
+ipc.on('set-global-shortcuts', function() {
+  setGlobalShortcuts();
 });
